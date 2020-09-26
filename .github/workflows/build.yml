@@ -33,12 +33,27 @@ jobs:
     # Per Architecture Static Builds
     - name: Build Windows
       run: env GGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -o nvidia-clerk-windows.exe
-    
+
+    - name: Build Windows ARM
+      run: env GOARM=5 GGO_ENABLED=0 GOOS=windows GOARCH=arm go build -a -o nvidia-clerk-windows-arm.exe
+
     - name: Build Linux
-      run: go build -a -o nvidia-clerk-linux
+      run: env GOOS=linux GOARCH=amd64 go build -a -o nvidia-clerk-linux
+
+    - name: Build Linux ARM
+      run: env GOARM=5 GOOS=linux GOARCH=arm go build -a -o nvidia-clerk-linux-arm
+
+    - name: Build Linux ARM64
+      run: env GOARM=5 GOOS=linux GOARCH=arm64 go build -a -o nvidia-clerk-linux-arm64
 
     - name: Build Darwin
       run: env GOOS=darwin GOARCH=amd64 go build -a -o nvidia-clerk-darwin
 
-    - name: Test 
-      run: go test -v ./...
+    - name: Run Tests 
+      run: go test -v -cover -race -coverprofile=coverage.out ./...
+  
+    - name: Get Coverage Tool
+      run: go get github.com/mattn/goveralls
+
+    - name: Upload Coverage
+      run: goveralls -coverprofile=coverage.out -service=circle-ci -repotoken=${{ secrets.COVERALLS_TOKEN }}

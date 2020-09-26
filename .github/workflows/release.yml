@@ -33,10 +33,19 @@ jobs:
 
     # Per Architecture Static Builds
     - name: Build Windows
-      run: env GOOS=windows GOARCH=amd64 go build -a -o nvidia-clerk-windows.exe
-    
+      run: env GGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -o nvidia-clerk-windows.exe
+
+    - name: Build Windows ARM
+      run: env GOARM=5 GGO_ENABLED=0 GOOS=windows GOARCH=arm go build -a -o nvidia-clerk-windows-arm.exe
+
     - name: Build Linux
-      run: go build -a -o nvidia-clerk-linux
+      run: env GOOS=linux GOARCH=amd64 go build -a -o nvidia-clerk-linux
+
+    - name: Build Linux ARM
+      run: env GOARM=5 GOOS=linux GOARCH=arm go build -a -o nvidia-clerk-linux-arm
+
+    - name: Build Linux ARM64
+      run: env GOARM=5 GOOS=linux GOARCH=arm64 go build -a -o nvidia-clerk-linux-arm64
 
     - name: Build Darwin
       run: env GOOS=darwin GOARCH=amd64 go build -a -o nvidia-clerk-darwin
@@ -44,13 +53,19 @@ jobs:
     # Create Artifact Upload Directories
     - run: mkdir -p ianmarmour/nvidia-clerk/build
     - run: mkdir -p ianmarmour/nvidia-clerk/build/nvidia-clerk-windows
+    - run: mkdir -p ianmarmour/nvidia-clerk/build/nvidia-clerk-windows-arm
     - run: mkdir -p ianmarmour/nvidia-clerk/build/nvidia-clerk-linux
+    - run: mkdir -p ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm
+    - run: mkdir -p ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm64
     - run: mkdir -p ianmarmour/nvidia-clerk/build/nvidia-clerk-darwin
 
 
     # Copy Build Artifacts to Artifact Upload Directories
     - run: cp nvidia-clerk-windows.exe ianmarmour/nvidia-clerk/build/nvidia-clerk-windows/nvidia-clerk-windows.exe
+    - run: cp nvidia-clerk-windows.exe ianmarmour/nvidia-clerk/build/nvidia-clerk-windows-arm/nvidia-clerk-windows-arm.exe
     - run: cp nvidia-clerk-linux ianmarmour/nvidia-clerk/build/nvidia-clerk-linux/nvidia-clerk-linux
+    - run: cp nvidia-clerk-linux ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm/nvidia-clerk-linux-arm
+    - run: cp nvidia-clerk-linux ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm64/nvidia-clerk-linux-arm64
     - run: cp nvidia-clerk-darwin ianmarmour/nvidia-clerk/build/nvidia-clerk-darwin/nvidia-clerk-darwin
     
     # Publish Artifacts Windows
@@ -58,12 +73,30 @@ jobs:
       with:
         name: nvidia-clerk-windows
         path: ianmarmour/nvidia-clerk/build/nvidia-clerk-windows/nvidia-clerk-windows.exe
+
+    # Publish Artifacts Windows ARM
+    - uses: actions/upload-artifact@v2
+      with:
+        name: nvidia-clerk-windows-arm
+        path: ianmarmour/nvidia-clerk/build/nvidia-clerk-windows-arm/nvidia-clerk-windows-arm.exe
     
     # Publish Artifacts Linux
     - uses: actions/upload-artifact@v2
       with:
         name: nvidia-clerk-linux
         path: ianmarmour/nvidia-clerk/build/nvidia-clerk-linux/nvidia-clerk-linux
+    
+    # Publish Artifacts Linux ARM
+    - uses: actions/upload-artifact@v2
+      with:
+        name: nvidia-clerk-linux-arm
+        path: ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm/nvidia-clerk-linux-arm
+
+    # Publish Artifacts Linux ARM64
+    - uses: actions/upload-artifact@v2
+      with:
+        name: nvidia-clerk-linux-arm64
+        path: ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm64/nvidia-clerk-linux-arm64
 
     # Publish Artifacts Darwin
     - uses: actions/upload-artifact@v2
@@ -86,7 +119,6 @@ jobs:
           draft: true
           prerelease: true
 
-    # Upload Release Assets
     - name: Upload Windows Assets
       id: upload-release-asset-windows
       uses: actions/upload-release-asset@v1
@@ -98,6 +130,17 @@ jobs:
         asset_name: nvidia-clerk-windows.exe
         asset_content_type: application/octet-stream
 
+    - name: Upload Windows ARM Assets 
+      id: upload-release-asset-windows-arm
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ianmarmour/nvidia-clerk/build/nvidia-clerk-windows-arm/nvidia-clerk-windows-arm.exe
+        asset_name: nvidia-clerk-windows-arm.exe
+        asset_content_type: application/octet-stream
+
     - name: Upload Linux Assets
       id: upload-release-asset-linux
       uses: actions/upload-release-asset@v1
@@ -107,6 +150,28 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ianmarmour/nvidia-clerk/build/nvidia-clerk-linux/nvidia-clerk-linux
         asset_name: nvidia-clerk-linux
+        asset_content_type: application/octet-stream
+
+    - name: Upload Linux ARM Assets
+      id: upload-release-asset-linux-arm
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm/nvidia-clerk-linux-arm
+        asset_name: nvidia-clerk-linux-arm
+        asset_content_type: application/octet-stream
+
+    - name: Upload Linux ARM64 Assets
+      id: upload-release-asset-linux-arm64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ianmarmour/nvidia-clerk/build/nvidia-clerk-linux-arm64/nvidia-clerk-linux-arm64
+        asset_name: nvidia-clerk-linux-arm64
         asset_content_type: application/octet-stream
 
     - name: Upload Darwin Assets

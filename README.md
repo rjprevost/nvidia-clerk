@@ -1,11 +1,4 @@
-# UPDATE - v3.0 Autocheckout is Back
-
-DOWNLOAD UPDATE HERE -> [Releases](https://github.com/ianmarmour/nvidia-clerk/releases/latest) <-
-
-All functionaly is restored and improved for adding cards to checkout, please see the new usage section for users who are away from their computer!
-
-IF YOU USE NOTIFICATIONS THE LINKS WILL ONLY WORK WITH -REMOTE
-> Links can only be used a single time either on your desktop (default behavior) or on another system with -remote enabled.
+![go](https://img.shields.io/github/workflow/status/ianmarmour/nvidia-clerk/Go) [![Coverage Status](https://coveralls.io/repos/github/ianmarmour/nvidia-clerk/badge.svg?branch=master)](https://coveralls.io/github/ianmarmour/nvidia-clerk?branch=master) [![discord](https://img.shields.io/discord/759183179717541920)](https://discord.gg/zFQxqPQ)
 
 # nvidia-clerk
 
@@ -29,16 +22,15 @@ Download the latest release from [Releases](https://github.com/ianmarmour/nvidia
 
 ### Supported Region Codes
 
-AUT,BEL,CAN,CZE,DNK,FIN,FRA,DEU,USA,GBR,IRL,ITA,SWE,LUX,POL,PRT,ESP, NOR, NLD
+AUT, BEL, CAN, CZE, DNK, FIN, FRA, DEU, USA, GBR, IRL, ITA, SWE, LUX, POL, PRT, ESP, NOR, NLD
 
-### Supported Models
+### Supported Models By Region
 
-3080 (All regions)
-3090 (GBR and USA Regions Only)
+3080 - All Region Codes
+
+3090 - GBR and USA Region Codes
 
 ## Usage
-| :exclamation:  Once you execute the below commands make sure to leave the Google Chrome browser that it launches open   |
-|-----------------------------------------|
 
 ### Windows
 | :memo:        | All commands should be executed inside of cmd.exe |
@@ -193,6 +185,8 @@ set TELEGRAM_CHAT_ID=YOUR_TELEGRAM_CHAT_ID_HERE
 ```
 
 ## FAQ
+| :exclamation:  Before you or ask for help go get the [latest release](https://github.com/ianmarmour/nvidia-clerk/releases/latest)! and check [Discord](https://discord.gg/zFQxqPQ)   |
+|-----------------------------------------|
 
 #### exec: "google-chrome": executable file not found in %PATH%
 The path to google chrome needs to be added to the path. While reinstalling Chrome can fix it, a quick search on Google will show you how to do exactly this.
