@@ -29,6 +29,9 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+        
+    - name: Get Coverage Tools
+      run:  go get github.com/mattn/goveralls
 
     # Per Architecture Static Builds
     - name: Build Windows
@@ -53,7 +56,9 @@ jobs:
       run: go test -v -cover -race -coverprofile=coverage.out ./...
   
     - name: Get Coverage Tool
+      env:
+        GO111MODULE: off
       run: go get github.com/mattn/goveralls
-
+      
     - name: Upload Coverage
       run: goveralls -coverprofile=coverage.out -service=circle-ci -repotoken=${{ secrets.COVERALLS_TOKEN }}
