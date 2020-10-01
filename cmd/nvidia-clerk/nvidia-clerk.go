@@ -15,8 +15,6 @@ import (
 	"github.com/ianmarmour/nvidia-clerk/internal/rest"
 )
 
-var testsHaveErrors bool
-
 func main() {
 	log.SetFlags(log.LstdFlags)
 
@@ -25,18 +23,18 @@ func main() {
 	var delay int64
 
 	// Parse Argument Flags
-	flag.StringVar(&region, "region", "USA", "3 Letter region code")
-	flag.StringVar(&model, "model", "3080", "GPU Model number E.X. 3070, 3080, 3090")
+	flag.StringVar(&region, "region", "", "3 Letter region code E.X. USA, GBR, DEU")
+	flag.StringVar(&model, "model", "", "GPU Model number E.X. 3070, 3080, 3090")
 	flag.Int64Var(&delay, "delay", 1, "Delay for refreshing in miliseconds")
 	twitter := flag.Bool("twitter", false, "Enable Twitter Posts for whenever SKU is in stock.")
 	twilio := flag.Bool("sms", false, "Enable SMS notifications for whenever SKU is in stock.")
 	discord := flag.Bool("discord", false, "Enable Discord webhook notifications for whenever SKU is in stock.")
 	telegram := flag.Bool("telegram", false, "Enable Telegram webhook notifications for whenever SKU is in stock.")
-	remote := flag.Bool("remote", false, "Enable notification only mode.")
-	test := flag.Bool("test", false, "Enable remote mode for when you're away from computer.")
+	remote := flag.Bool("remote", false, "Enable remote notification only mode.")
+	desktop := flag.Bool("desktop", false, "Enable desktop notifications, disabled by default.")
 	flag.Parse()
 
-	config, configErr := config.Get(region, model, delay, *twilio, *discord, *twitter, *telegram)
+	config, configErr := config.Get(region, model, delay, *twilio, *discord, *twitter, *telegram, *desktop, false)
 	if configErr != nil {
 		log.Fatal(configErr)
 	}
@@ -78,21 +76,27 @@ func main() {
 		log.Println("Product Locale: " + config.Locale)
 		log.Println("Product Status: " + info.Products.Product[0].InventoryStatus.Status + "\n")
 
-		if info.Products.Product[0].InventoryStatus.Status == "PRODUCT_INVENTORY_IN_STOCK" || *test == true {
-			cart, err := rest.AddToCheckout(*config.SKU, token.Value, config.Locale, client)
-			if err != nil {
-				log.Println("Error adding card to checkout retrying...")
-				continue
+		if info.Products.Product[0].InventoryStatus.Status == "PRODUCT_INVENTORY_IN_STOCK" {
+			var cartURL string
+			switch model {
+			case "2060":
+				cartURL = fmt.Sprintf("https://www.nvidia.com/%s/geforce/20-series/", config.NvidiaLocale)
+			case "3080":
+				cartURL = fmt.Sprintf("https://www.nvidia.com/%s/geforce/graphics-cards/30-series/rtx-%s/", config.NvidiaLocale, model)
+			case "3090":
+				cartURL = fmt.Sprintf("https://www.nvidia.com/%s/geforce/graphics-cards/30-series/rtx-%s/", config.NvidiaLocale, model)
+			default:
+				cartURL = "https://www.nvidia.com/"
 			}
 
-			err = notify(info.Products.Product[0].Name, cart.URL, *remote, config, client)
+			err = notify(info.Products.Product[0].Name, fmt.Sprintf(cartURL, model), *remote, config, client)
 			if err != nil {
 				log.Println("Error attempting to send notification retrying...")
 				continue
 			}
 
 			if *remote != true {
-				err = openbrowser(cart.URL)
+				err = openbrowser(cartURL)
 				if err != nil {
 					log.Fatal("Error attempting to open browser.", err)
 				}
@@ -125,7 +129,10 @@ func notify(id string, url string, remote bool, config *config.Config, client *h
 	}
 
 	if config.DiscordConfig != nil {
-		err := alert.SendDiscordMessage(id, url, *config.DiscordConfig, client)
+		message := alert.DiscordProductMessage{}
+		message.Set(url, "IN_STOCK")
+
+		err := alert.SendDiscordMessage(&message, *config.DiscordConfig, client)
 		if err != nil {
 			log.Println("Error sending Discord notification, retrying...")
 			return err
@@ -136,6 +143,14 @@ func notify(id string, url string, remote bool, config *config.Config, client *h
 		err := alert.SendTelegramMessage(id, url, *config.TelegramConfig, client)
 		if err != nil {
 			log.Println("Error sending Telegram notification, retrying...")
+			return err
+		}
+	}
+
+	if config.ToastConfig != nil {
+		err := alert.SendToast(config.ToastConfig.OS, id)
+		if err != nil {
+			log.Println("Error sending Windows Desktop notification, retrying...")
 			return err
 		}
 	}

@@ -70,6 +70,7 @@ func TestGet(t *testing.T) {
 		discord     bool
 		twitter     bool
 		telegram    bool
+		desktop     bool
 		environment func()
 		expected    *Config
 	}{
@@ -80,6 +81,7 @@ func TestGet(t *testing.T) {
 			discord:     false,
 			twitter:     false,
 			telegram:    false,
+			desktop:     false,
 			environment: func() {},
 			expected: &Config{
 				Locale:       "en_us",
@@ -87,7 +89,6 @@ func TestGet(t *testing.T) {
 				Currency:     "USD",
 				Delay:        500,
 				SKU:          strPtr("5438481700"),
-				TestSKU:      strPtr("5379432500"),
 			},
 		},
 		"with sms": {
@@ -96,6 +97,7 @@ func TestGet(t *testing.T) {
 			discord:     false,
 			twitter:     false,
 			telegram:    false,
+			desktop:     false,
 			environment: envSMS(),
 			expected: &Config{
 				Locale:       "en_us",
@@ -103,7 +105,6 @@ func TestGet(t *testing.T) {
 				Currency:     "USD",
 				Delay:        0,
 				SKU:          strPtr("5438481700"),
-				TestSKU:      strPtr("5379432500"),
 				TwilioConfig: &TwilioConfig{
 					AccountSID:        "1",
 					Token:             "2",
@@ -118,6 +119,7 @@ func TestGet(t *testing.T) {
 			discord:     true,
 			twitter:     false,
 			telegram:    false,
+			desktop:     false,
 			environment: envDiscord(),
 			expected: &Config{
 				Locale:       "en_us",
@@ -125,7 +127,6 @@ func TestGet(t *testing.T) {
 				Currency:     "USD",
 				Delay:        0,
 				SKU:          strPtr("5438481700"),
-				TestSKU:      strPtr("5379432500"),
 				DiscordConfig: &DiscordConfig{
 					WebhookURL: "1",
 				},
@@ -137,6 +138,7 @@ func TestGet(t *testing.T) {
 			discord:     false,
 			twitter:     true,
 			telegram:    false,
+			desktop:     false,
 			environment: envTwitter(),
 			expected: &Config{
 				Locale:       "en_us",
@@ -144,7 +146,6 @@ func TestGet(t *testing.T) {
 				Currency:     "USD",
 				Delay:        0,
 				SKU:          strPtr("5438481700"),
-				TestSKU:      strPtr("5379432500"),
 				TwitterConfig: &TwitterConfig{
 					ConsumerKey:    "1",
 					ConsumerSecret: "2",
@@ -159,6 +160,7 @@ func TestGet(t *testing.T) {
 			discord:     false,
 			twitter:     false,
 			telegram:    true,
+			desktop:     false,
 			environment: envTelegram(),
 			expected: &Config{
 				Locale:       "en_us",
@@ -167,7 +169,6 @@ func TestGet(t *testing.T) {
 				Currency: "USD",
 				Delay:    0,
 				SKU:      strPtr("5438481700"),
-				TestSKU:  strPtr("5379432500"),
 				TelegramConfig: &TelegramConfig{
 					APIKey: "1",
 					ChatID: "2",
@@ -182,7 +183,7 @@ func TestGet(t *testing.T) {
 
 			test.environment()
 
-			result, err := Get(test.region, "3080", test.delay, test.sms, test.discord, test.twitter, test.telegram)
+			result, err := Get(test.region, "3080", test.delay, test.sms, test.discord, test.twitter, test.telegram, test.desktop, false)
 			if err != nil {
 				t.Errorf(err.Error())
 			}
